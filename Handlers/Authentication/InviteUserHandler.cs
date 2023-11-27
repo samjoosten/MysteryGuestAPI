@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using MysteryGuestAPI.Attributes;
 using MysteryGuestAPI.Contexts;
 using MysteryGuestAPI.DbContext;
 
@@ -10,13 +11,9 @@ public record InviteUserRequest(string Email, Role Role);
 
 public static class InviteUserHandler
 {
-    public static async Task<IResult> InviteUser(InviteUserRequest request, ApplicationDbContext context, ClaimsPrincipal claims, [FromServices] IConfiguration configuration)
+    [CustomAuthorize(Role.Admin)]
+    public static async Task<IResult> InviteUser([FromBody] InviteUserRequest request, ApplicationDbContext context, ClaimsPrincipal claims, [FromServices] IConfiguration configuration)
     {
-        if (claims.IsInRole(Role.Admin.ToString()) is false)
-        {
-            return TypedResults.Forbid();
-        }
-        
         var existingUser = await context.Users.FirstOrDefaultAsync(x => x.Email == request.Email);
         if (existingUser is not null)
         {
@@ -39,6 +36,6 @@ public static class InviteUserHandler
         await context.UserInvites.AddAsync(userInvite);
         await context.SaveChangesAsync();
 
-        return TypedResults.Ok("User invited");
+        return TypedResults.Ok(userInvite);
     }
 }
