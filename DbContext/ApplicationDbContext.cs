@@ -24,6 +24,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
+        
         optionsBuilder.UseNpgsql(
             "host=ep-gentle-recipe-75487514.eu-central-1.aws.neon.tech; database=neondb; search path=neondb; port=5432; user id=sam.joosten90; password=uvKc8XowqGx0;");
     }

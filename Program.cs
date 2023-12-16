@@ -8,10 +8,13 @@ using MysteryGuestAPI.Contexts;
 using MysteryGuestAPI.DbContext;
 using MysteryGuestAPI.Handlers.Authentication;
 using MysteryGuestAPI.Handlers.Company;
+using MysteryGuestAPI.Handlers.User;
 using MysteryGuestAPI.Services.Implementations;
 using MysteryGuestAPI.Services.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddCors();
 
 builder.Services.AddDbContext<ApplicationDbContext>();
 
@@ -35,18 +38,21 @@ builder.Services.AddAuthentication(options =>
         ValidateIssuerSigningKey = true,
         ValidIssuer = builder.Configuration.GetSection("Jwt:Issuer").Value,
         ValidAudience = builder.Configuration.GetSection("Jwt:Audience").Value,
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration.GetSection("Jwt:Key").Value!))
+        IssuerSigningKey =
+            new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration.GetSection("Jwt:Key").Value!))
     };
 });
 
 builder.Services.AddTransient<IAuthenticationService, AuthenticationService>();
 
-builder.Services.AddControllers();
+builder.Services.AddAuthorization();
 builder.Services.AddSwaggerGen();
 builder.Services.AddEndpointsApiExplorer();
 
 
 var app = builder.Build();
+
+app.UseCors(b => b.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
 
 if (app.Environment.IsDevelopment())
 {
@@ -59,13 +65,16 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 
+
 // Authentication
 app.MapPost("/register", RegisterHandler.Register);
 app.MapPost("/login", LoginHandler.Login);
 app.MapPost("/token/refresh", RefreshAccessTokenHandler.RefreshAccessToken);
+
+// Users
 app.MapPost("/users/invite", InviteUserHandler.InviteUser).RequireAuthorization();
+app.MapGet("/users/me", GetUserHandler.GetUser).RequireAuthorization();
 
 // Companies
 app.MapGet("/companies", GetCompaniesHandler.GetCompanies).RequireAuthorization();
 app.Run();
-
