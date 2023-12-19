@@ -5,13 +5,10 @@ namespace MysteryGuestAPI.Handlers.Company;
 
 public static class GetCompaniesHandler
 {
-    public static async Task<IResult> GetCompanies()
+    public static async Task<IResult> GetCompanies(ApplicationDbContext context)
     {
         List<Contexts.Company> companies;
-        await using (var context = new ApplicationDbContext())
-        {
-            companies = await context.Companies.ToListAsync();
-        }
+        companies = await context.Companies.ToListAsync();
 
         return TypedResults.Ok(companies);
     }

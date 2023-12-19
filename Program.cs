@@ -9,6 +9,7 @@ using MysteryGuestAPI.DbContext;
 using MysteryGuestAPI.Handlers.Authentication;
 using MysteryGuestAPI.Handlers.Company;
 using MysteryGuestAPI.Handlers.User;
+using MysteryGuestAPI.Repositories;
 using MysteryGuestAPI.Services.Implementations;
 using MysteryGuestAPI.Services.Interfaces;
 
@@ -16,7 +17,9 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddCors();
 
-builder.Services.AddDbContext<ApplicationDbContext>();
+builder.Services.AddDbContextPool<ApplicationDbContext>(options =>
+    options.UseNpgsql("host=ep-gentle-recipe-75487514.eu-central-1.aws.neon.tech; database=neondb; search path=neondb; port=5432; user id=sam.joosten90; password=uvKc8XowqGx0;")
+        .UseLoggerFactory(LoggerFactory.Create(b => b.AddConsole())));
 
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>().AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
@@ -43,6 +46,7 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
+builder.Services.AddTransient<IUserRepository, UserRepository>();
 builder.Services.AddTransient<IAuthenticationService, AuthenticationService>();
 
 builder.Services.AddAuthorization();
@@ -73,8 +77,9 @@ app.MapPost("/token/refresh", RefreshAccessTokenHandler.RefreshAccessToken);
 
 // Users
 app.MapPost("/users/invite", InviteUserHandler.InviteUser).RequireAuthorization();
+app.MapGet("/users/invites/{token}", GetInviteByTokenHandler.GetInvite);
 app.MapGet("/users/me", GetUserHandler.GetUser).RequireAuthorization();
 
 // Companies
-app.MapGet("/companies", GetCompaniesHandler.GetCompanies).RequireAuthorization();
+app.MapGet("/companies", GetCompaniesHandler.GetCompanies);
 app.Run();

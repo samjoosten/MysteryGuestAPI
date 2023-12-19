@@ -2,8 +2,11 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using MysteryGuestAPI.Contexts;
+using MysteryGuestAPI.DbContext;
 using MysteryGuestAPI.Handlers.Authentication.Shared;
+using MysteryGuestAPI.Repositories;
 using MysteryGuestAPI.Services.Interfaces;
 
 namespace MysteryGuestAPI.Handlers.Authentication;
@@ -12,10 +15,12 @@ public record LoginRequest(string Email, string Password);
 
 public static class LoginHandler
 {
-    public static async Task<IResult> Login([FromBody] LoginRequest request, [FromServices] IAuthenticationService authenticationService,
+    public static async Task<IResult> Login([FromBody] LoginRequest request,
+        [FromServices] IAuthenticationService authenticationService,
         [FromServices] UserManager<ApplicationUser> userManager, [FromServices] IConfiguration configuration)
     {
-        var user = await userManager.FindByEmailAsync(request.Email);
+        var user = await userManager.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
+        
         if (user is null || !await userManager.CheckPasswordAsync(user, request.Password))
         {
             return TypedResults.Unauthorized();

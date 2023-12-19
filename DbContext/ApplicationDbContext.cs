@@ -6,7 +6,7 @@ namespace MysteryGuestAPI.DbContext;
 
 public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 {
-    public ApplicationDbContext()
+    public ApplicationDbContext(DbContextOptions options) : base(options)
     {
         
     }
@@ -21,11 +21,18 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public virtual DbSet<TextAnswer> TextAnswers { get; set; }
     public virtual DbSet<ScoreAnswer> ScoreAnswers { get; set; }
     public virtual DbSet<UserInvite> UserInvites { get; set; }
+    //
+    // protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    // {
+    //     
+    //     optionsBuilder.UseNpgsql(
+    //         "host=ep-gentle-recipe-75487514.eu-central-1.aws.neon.tech; database=neondb; search path=neondb; port=5432; user id=sam.joosten90; password=uvKc8XowqGx0;")
+    //         .UseLoggerFactory(LoggerFactory.Create(builder => builder.AddConsole()));
+    // }
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    protected override void OnModelCreating(ModelBuilder builder)
     {
-        
-        optionsBuilder.UseNpgsql(
-            "host=ep-gentle-recipe-75487514.eu-central-1.aws.neon.tech; database=neondb; search path=neondb; port=5432; user id=sam.joosten90; password=uvKc8XowqGx0;");
+        base.OnModelCreating(builder);
+        builder.Entity<ApplicationUser>().HasIndex(u => u.Email).IsUnique();
     }
 }
