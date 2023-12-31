@@ -39,8 +39,10 @@ builder.Services.AddAuthentication(options =>
         ValidateAudience = true,
         RequireExpirationTime = true,
         ValidateIssuerSigningKey = true,
+        ValidateLifetime = true,
         ValidIssuer = builder.Configuration.GetSection("Jwt:Issuer").Value,
         ValidAudience = builder.Configuration.GetSection("Jwt:Audience").Value,
+        ClockSkew = TimeSpan.Zero,
         IssuerSigningKey =
             new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration.GetSection("Jwt:Key").Value!))
     };
@@ -48,6 +50,7 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddTransient<IUserRepository, UserRepository>();
 builder.Services.AddTransient<IAuthenticationService, AuthenticationService>();
+builder.Services.AddTransient<IEmailService, EmailService>();
 
 builder.Services.AddAuthorization();
 builder.Services.AddSwaggerGen();

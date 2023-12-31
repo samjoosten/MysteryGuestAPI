@@ -19,7 +19,7 @@ public static class UserDtoExtensions
             FirstName = user.FirstName,
             LastName = user.LastName,
             Role = user.Role,
-            FullName = user.FullName()
+            FullName = user.FullName(),
         };
     }
 }
